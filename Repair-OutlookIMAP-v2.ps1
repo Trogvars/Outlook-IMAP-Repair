@@ -30,8 +30,33 @@ param(
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
-if ([IntPtr]::Size -ne 8 -or $PSVersionTable.PSEdition -ne 'Desktop') {
-    throw 'Requires Windows PowerShell 5.1 x64 (powershell.exe in System32, not SysWOW64; not PowerShell 7).'
+# Self-bootstrap when launched from pwsh or 32-bit Windows PowerShell.
+# The Extended MAPI interop below still runs only under Windows PowerShell 5.1 x64.
+if ([IntPtr]::Size -ne 8 -or $PSVersionTable.PSEdition -ne 'Desktop' -or $PSVersionTable.PSVersion.Major -ne 5) {
+    if (-not [Environment]::Is64BitOperatingSystem) {
+        throw 'Outlook LTSC x64 repair requires 64-bit Windows.'
+    }
+    $subpath = if ([Environment]::Is64BitProcess) {
+        'System32\WindowsPowerShell\v1.0\powershell.exe'
+    } else {
+        'Sysnative\WindowsPowerShell\v1.0\powershell.exe'
+    }
+    $ps64 = Join-Path $env:SystemRoot $subpath
+    if (-not (Test-Path -LiteralPath $ps64 -PathType Leaf)) {
+        throw "Windows PowerShell 5.1 x64 was not found: $ps64"
+    }
+    $forward = @('-NoLogo', '-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-File', $PSCommandPath)
+    if ($Apply) { $forward += '-Apply' }
+    if ($All) { $forward += '-All' }
+    if ($PSBoundParameters.ContainsKey('Profile')) { $forward += @('-Profile', $Profile) }
+    if ($PSBoundParameters.ContainsKey('Uid')) { $forward += @('-Uid', $Uid) }
+    if ($PSBoundParameters.ContainsKey('BackupRoot')) { $forward += @('-BackupRoot', $BackupRoot) }
+    & $ps64 @forward
+    if ($null -eq $LASTEXITCODE) { exit 1 }
+    exit $LASTEXITCODE
+}
+if ($Apply -and [Security.Principal.WindowsIdentity]::GetCurrent().User.Value -eq 'S-1-5-18') {
+    throw 'Refusing to modify MAPI profiles as SYSTEM. Run as the affected user.'
 }
 if ($All -and -not $Apply) { throw '-All is only valid together with -Apply.' }
 if ($All -and $Uid) { throw '-All and -Uid are mutually exclusive.' }
