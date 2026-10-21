@@ -39,7 +39,7 @@ Since both changes were applied together, it has **not** been established whethe
 ## Requirements
 
 - Windows, classic **Outlook LTSC 2021 x64**, and IMAP accounts (tested combination).
-- **Windows PowerShell 5.1 x64** (Desktop edition), not PowerShell 7 or 32-bit PowerShell.
+- **Windows PowerShell 5.1 x64** (Desktop edition) must be installed; callers may use PowerShell 7 or 32-bit shells because scripts automatically relaunch under 5.1 x64.
 - Execute as the **affected signed-in Windows user**, never as SYSTEM or another administrator.
 - Close Outlook and MFCMAPI before applying changes.
 - No Visual Studio installation or separate PowerShell modules required on the server. The tool relies on PowerShell Add-Type and Extended MAPI from the Outlook installation.
@@ -94,9 +94,9 @@ Alternatively, call the companion **[Start-OutlookIMAP.ps1](Start-OutlookIMAP.ps
 .\Start-OutlookIMAP.ps1 -Apply -Profile "Outlook" -All
 ~~~
 
-**Do not call the core Repair-OutlookIMAP-v2.ps1 directly from PowerShell 7 or x86 PowerShell.** Its architecture guard will reject those hosts. The launchers only guarantee the **correct process architecture and PowerShell edition**; they cannot override Group Policy execution restrictions, missing Outlook/MAPI installation, unavailable user profiles, or running Outlook sessions.
+**Direct .ps1 execution now works across Windows shells as well:** [Repair-OutlookIMAP-v2.ps1](Repair-OutlookIMAP-v2.ps1) and [Invoke-RDS-OutlookRepair.ps1](Invoke-RDS-OutlookRepair.ps1) automatically relaunch in Windows PowerShell 5.1 x64 when invoked from PowerShell 7 or x86. They preserve supported command-line parameters and propagate the exit code. The launchers select the **correct process architecture and PowerShell edition**; they cannot override Group Policy execution restrictions, missing Outlook/MAPI installation, unavailable user profiles, or running Outlook sessions.
 
-For per-user RDS logon repair, use [Run-RDS-OutlookRepair.cmd](Run-RDS-OutlookRepair.cmd) instead. It starts the RDS wrapper and applies changes to the signed-in user's **default Outlook profile** only.
+For per-user RDS logon repair, use [Run-RDS-OutlookRepair.cmd](Run-RDS-OutlookRepair.cmd) instead. It starts the RDS wrapper and applies changes to the signed-in user's **default Outlook profile** only. This CMD launcher has been reported working in a Windows user session (exit 0); inspect its per-profile log to determine whether any services were actually changed.
 
 ---
 
