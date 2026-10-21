@@ -65,6 +65,41 @@ C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe
 
 When calling from a **32-bit process**, use Windows' **Sysnative** alias to access the 64-bit executable.
 
+## Universal startup from CMD, PowerShell 5/7, x86 or x64
+
+Use **[Run-OutlookIMAP.cmd](Run-OutlookIMAP.cmd)** as the preferred entry point. It resolves its own folder, selects 64-bit Windows PowerShell 5.1 using **Sysnative** when called from a 32-bit process (otherwise **System32**), and forwards arguments and exit codes to the main script.
+
+~~~bat
+REM Read-only diagnosis
+Run-OutlookIMAP.cmd
+
+REM Read-only diagnosis of a specific profile
+Run-OutlookIMAP.cmd -Profile "Outlook"
+
+REM Repair all matching services in one profile (close Outlook first)
+Run-OutlookIMAP.cmd -Apply -Profile "Outlook" -All
+~~~
+
+From **Windows PowerShell 5.1**, **PowerShell 7** or a PowerShell x86 session:
+
+~~~powershell
+& ".\Run-OutlookIMAP.cmd" -Profile "Outlook"
+& ".\Run-OutlookIMAP.cmd" -Apply -Profile "Outlook" -All
+~~~
+
+Alternatively, call the companion **[Start-OutlookIMAP.ps1](Start-OutlookIMAP.ps1)** from any Windows PowerShell / pwsh process; it performs the same x64 bootstrap:
+
+~~~powershell
+.\Start-OutlookIMAP.ps1 -Profile "Outlook"
+.\Start-OutlookIMAP.ps1 -Apply -Profile "Outlook" -All
+~~~
+
+**Do not call the core Repair-OutlookIMAP-v2.ps1 directly from PowerShell 7 or x86 PowerShell.** Its architecture guard will reject those hosts. The launchers only guarantee the **correct process architecture and PowerShell edition**; they cannot override Group Policy execution restrictions, missing Outlook/MAPI installation, unavailable user profiles, or running Outlook sessions.
+
+For per-user RDS logon repair, use [Run-RDS-OutlookRepair.cmd](Run-RDS-OutlookRepair.cmd) instead. It starts the RDS wrapper and applies changes to the signed-in user's **default Outlook profile** only.
+
+---
+
 ## Usage
 
 The core script is [Repair-OutlookIMAP-v2.ps1](Repair-OutlookIMAP-v2.ps1). Run these commands from the directory containing the downloaded script.
