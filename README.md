@@ -6,6 +6,8 @@
 
 > **Status:** pilot administrator utility. Targeted repair has been verified on Outlook LTSC 2021 x64. Bulk and RDS automation require testing before production rollout. The scripts are now included in this repository; test their behavior in your own environment before broad rollout.
 
+For other public reports of this exact OST-settings symptom, see [Related reports and comparable cases](RELATED_REPORTS.md).
+
 ## Symptoms
 
 On some existing **classic Microsoft Outlook** profiles using IMAP, opening **File → Account Settings → Account Settings → Data Files → Settings** fails with **0x80040605**. The same error can occur in [MFCMAPI](https://github.com/microsoft/mfcmapi) when configuring the associated message service.
