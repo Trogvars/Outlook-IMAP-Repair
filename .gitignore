@@ -1,0 +1,15 @@
+# Generated Outlook profile exports — may contain sensitive account settings
+*.reg
+
+# Local diagnostics; redact before sharing
+*.log
+result-*.csv
+rds-core-*
+rds-launch-*
+
+# Local build/editor clutter
+.vs/
+.vscode/
+bin/
+obj/
+*.user
