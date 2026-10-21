@@ -4,7 +4,7 @@
 
 **Languages:** English | [Русский](README.ru.md)
 
-> **Status:** pilot administrator utility. Targeted repair has been verified on Outlook LTSC 2021 x64. Bulk and RDS automation require testing before production rollout. Documentation is published first; the scripts mentioned below must be added to the repository before these examples can be executed.
+> **Status:** pilot administrator utility. Targeted repair has been verified on Outlook LTSC 2021 x64. Bulk and RDS automation require testing before production rollout. The scripts are now included in this repository; test their behavior in your own environment before broad rollout.
 
 ## Symptoms
 
@@ -67,7 +67,7 @@ When calling from a **32-bit process**, use Windows' **Sysnative** alias to acce
 
 ## Usage
 
-The core script is named **Repair-OutlookIMAP-v2.ps1**. The commands below apply when that script has been added/downloaded.
+The core script is [Repair-OutlookIMAP-v2.ps1](Repair-OutlookIMAP-v2.ps1). Run these commands from the directory containing the downloaded script.
 
 ### Read-only scan
 
@@ -104,7 +104,7 @@ The tool only writes when **both** the old entry name and missing support-files 
 
 ### RDS / terminal server
 
-The optional **Invoke-RDS-OutlookRepair.ps1** wrapper runs the core tool separately for selected profiles of the **current user**:
+The optional [Invoke-RDS-OutlookRepair.ps1](Invoke-RDS-OutlookRepair.ps1) wrapper runs the core tool separately for selected profiles of the **current user**:
 
 ~~~powershell
 # Scan the current user's default Outlook profile
@@ -119,7 +119,7 @@ The optional **Invoke-RDS-OutlookRepair.ps1** wrapper runs the core tool separat
 
 For server-wide deployment, run in each user's context at logon (for example, with a **user** GPO logon script). A single elevated/SYSTEM task cannot correctly substitute for every user's MAPI session. If Outlook or MFCMAPI is running, the launcher defers the repair in that session. Multiple simultaneous sessions for one account need additional operational checks.
 
-The optional CMD launcher must select **x64** Windows PowerShell; a 32-bit parent process may require **Sysnative**. Review **-AllProfiles** before enabling automatic rollout.
+The included [Run-RDS-OutlookRepair.cmd](Run-RDS-OutlookRepair.cmd) selects **x64** Windows PowerShell via **Sysnative** when needed and runs **-Apply** for the current user's **default profile only**. Use **-AllProfiles** with the PowerShell launcher only when you intentionally want to process every profile, including test copies.
 
 ## Backups and safety
 
