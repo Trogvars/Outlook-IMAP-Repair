@@ -65,6 +65,41 @@ C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe
 
 При запуске **из 32-битного процесса** для обращения к 64-битному PowerShell может потребоваться псевдокаталог **Sysnative**.
 
+## Универсальный запуск из CMD, PowerShell 5/7, x86 и x64
+
+Рекомендуемый способ — **[Run-OutlookIMAP.cmd](Run-OutlookIMAP.cmd)**. Он самостоятельно находит основной скрипт в своём каталоге, выбирает **Windows PowerShell 5.1 x64** через **Sysnative** из 32-битного процесса (иначе через **System32**), передаёт аргументы и код завершения.
+
+~~~bat
+REM Только диагностика
+Run-OutlookIMAP.cmd
+
+REM Проверка выбранного профиля
+Run-OutlookIMAP.cmd -Profile "Outlook"
+
+REM Исправить все подходящие службы одного профиля (Outlook должен быть закрыт)
+Run-OutlookIMAP.cmd -Apply -Profile "Outlook" -All
+~~~
+
+Из **Windows PowerShell 5.1**, **PowerShell 7** или 32-битного PowerShell:
+
+~~~powershell
+& ".\Run-OutlookIMAP.cmd" -Profile "Outlook"
+& ".\Run-OutlookIMAP.cmd" -Apply -Profile "Outlook" -All
+~~~
+
+Также можно использовать **[Start-OutlookIMAP.ps1](Start-OutlookIMAP.ps1)** — PowerShell-обёртку с таким же выбором x64:
+
+~~~powershell
+.\Start-OutlookIMAP.ps1 -Profile "Outlook"
+.\Start-OutlookIMAP.ps1 -Apply -Profile "Outlook" -All
+~~~
+
+**Не запускай основной Repair-OutlookIMAP-v2.ps1 напрямую из PowerShell 7 или x86 PowerShell:** проверка разрядности отклонит такую среду. Запускатели гарантируют **выбор правильной разрядности и редакции PowerShell**, но не устраняют запреты GPO, отсутствие Outlook/MAPI, неправильный пользовательский контекст или запущенный Outlook.
+
+Для запуска при входе пользователя RDS используй отдельный [Run-RDS-OutlookRepair.cmd](Run-RDS-OutlookRepair.cmd). Он исправляет только **профиль Outlook по умолчанию** текущего пользователя.
+
+---
+
 ## Использование
 
 Основной скрипт — [Repair-OutlookIMAP-v2.ps1](Repair-OutlookIMAP-v2.ps1). Команды выполняются из каталога со скачанным файлом.
