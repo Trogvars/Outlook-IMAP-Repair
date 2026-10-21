@@ -21,8 +21,27 @@ param(
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
-if ([IntPtr]::Size -ne 8 -or $PSVersionTable.PSEdition -ne 'Desktop') {
-    throw 'Run with 64-bit Windows PowerShell 5.1 (Desktop edition).'
+# Self-bootstrap when invoked directly from pwsh or 32-bit Windows PowerShell.
+if ([IntPtr]::Size -ne 8 -or $PSVersionTable.PSEdition -ne 'Desktop' -or $PSVersionTable.PSVersion.Major -ne 5) {
+    if (-not [Environment]::Is64BitOperatingSystem) {
+        throw 'RDS Outlook repair requires 64-bit Windows.'
+    }
+    $subpath = if ([Environment]::Is64BitProcess) {
+        'System32\WindowsPowerShell\v1.0\powershell.exe'
+    } else {
+        'Sysnative\WindowsPowerShell\v1.0\powershell.exe'
+    }
+    $ps64 = Join-Path $env:SystemRoot $subpath
+    if (-not (Test-Path -LiteralPath $ps64 -PathType Leaf)) {
+        throw "Windows PowerShell 5.1 x64 was not found: $ps64"
+    }
+    $forward = @('-NoLogo', '-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-File', $PSCommandPath)
+    if ($Apply) { $forward += '-Apply' }
+    if ($AllProfiles) { $forward += '-AllProfiles' }
+    if ($PSBoundParameters.ContainsKey('RepairScript')) { $forward += @('-RepairScript', $RepairScript) }
+    & $ps64 @forward
+    if ($null -eq $LASTEXITCODE) { exit 1 }
+    exit $LASTEXITCODE
 }
 $identity = [Security.Principal.WindowsIdentity]::GetCurrent()
 if ($identity.User.Value -eq 'S-1-5-18') {
